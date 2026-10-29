@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Rayyan.sim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050507;--ink:#f3f3ee;--dim:#8a8a90;--lime:#d4ff3a;--violet:#6b3bff;--teal:#2bd9a8}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;cursor:none}
+@media (hover:none){body{cursor:auto}.cur{display:none}}
+canvas#warp{position:fixed;inset:0;z-index:0}
+.cur{position:fixed;width:340px;height:340px;border-radius:50%;pointer-events:none;z-index:1;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(212,255,58,.18),transparent 65%);mix-blend-mode:screen}
+.dot{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--lime);pointer-events:none;z-index:50;transform:translate(-50%,-50%)}
+main{position:relative;z-index:2}
+section{min-height:100vh;padding:12vh 7vw;display:flex;flex-direction:column;justify-content:center;position:relative}
+.mono{font-family:'JetBrains Mono',monospace}
+/* boot */
+#boot{position:fixed;inset:0;z-index:100;background:#000;display:flex;align-items:center;justify-content:center;padding:6vw;transition:opacity .8s,visibility .8s}
+#boot.gone{opacity:0;visibility:hidden}
+#boot pre{font-family:'JetBrains Mono',monospace;color:var(--lime);font-size:clamp(13px,1.6vw,18px);line-height:1.7;white-space:pre-wrap;max-width:760px;width:100%}
+/* hero */
+.hero h1{font-size:clamp(64px,15vw,240px);line-height:.82;letter-spacing:-.06em;font-weight:700}
+.hero h1 .s{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;color:var(--lime);letter-spacing:-.02em}
+.glitch{position:relative;display:inline-block}
+.glitch::before,.glitch::after{content:attr(data-t);position:absolute;inset:0}
+.glitch::before{color:var(--teal);animation:g1 3s infinite steps(1);clip-path:inset(0 0 60% 0)}
+.glitch::after{color:var(--violet);animation:g2 3s infinite steps(1);clip-path:inset(55% 0 0 0)}
+@keyframes g1{0%,92%,100%{transform:none}93%{transform:translate(-6px,2px)}96%{transform:translate(5px,-3px)}}
+@keyframes g2{0%,90%,100%{transform:none}91%{transform:translate(7px,1px)}95%{transform:translate(-4px,3px)}}
+.kicker{font-size:13px;letter-spacing:.35em;text-transform:uppercase;color:var(--dim);margin-bottom:28px}
+.kicker b{color:var(--lime)}
+.sub{margin-top:40px;font-size:clamp(18px,2vw,26px);max-width:620px;color:#c9c9c4;line-height:1.4}
+.scroll{position:absolute;bottom:5vh;left:7vw;font-size:12px;letter-spacing:.3em;color:var(--dim)}
+.scroll i{display:inline-block;width:1px;height:40px;background:var(--lime);vertical-align:middle;margin-right:14px;animation:drip 1.6s infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+/* marquee */
+.mq{overflow:hidden;border-block:1px solid #222;padding:22px 0;background:rgba(5,5,7,.7);backdrop-filter:blur(6px)}
+.mq div{display:inline-block;white-space:nowrap;animation:mq 22s linear infinite;font-size:clamp(28px,4vw,56px);font-weight:700;letter-spacing:-.03em}
+.mq span{color:var(--lime);font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;margin:0 .4em}
+@keyframes mq{to{transform:translateX(-50%)}}
+/* dossier */
+h2{font-size:clamp(44px,8vw,120px);letter-spacing:-.05em;line-height:.9;margin-bottom:6vh}
+h2 em{font-family:'Instrument Serif',serif;color:var(--lime);font-weight:400}
+.file{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px;background:#1b1b20;border:1px solid #1b1b20}
+.cell{background:rgba(8,8,11,.92);padding:34px 30px;min-height:200px;display:flex;flex-direction:column;justify-content:space-between;transition:background .4s}
+.cell:hover{background:rgba(212,255,58,.06)}
+.cell .k{font-size:11px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+.cell .v{font-size:clamp(24px,2.6vw,36px);font-weight:700;letter-spacing:-.03em;line-height:1.05;margin-top:24px}
+.cell .v small{display:block;font-size:15px;font-weight:400;color:var(--dim);margin-top:10px;letter-spacing:0}
+.stamp{display:inline-block;margin-top:5vh;border:2px solid var(--lime);color:var(--lime);padding:10px 18px;transform:rotate(-4deg);font-size:14px;letter-spacing:.3em}
+/* trolley */
+.track{position:relative;height:200px;margin:4vh 0;border-radius:4px;overflow:hidden}
+.track svg{width:100%;height:100%}
+.choices{display:flex;gap:16px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;border:1px solid #333;background:transparent;color:var(--ink);padding:22px 34px;font-size:18px;border-radius:999px;transition:.25s}
+button:hover{border-color:var(--lime);color:var(--lime)}
+button.go{background:var(--lime);color:#050507;border-color:var(--lime);font-weight:700}
+#verdict{margin-top:4vh;font-size:clamp(20px,2.4vw,30px);min-height:2.6em;max-width:780px;line-height:1.35}
+#train{transition:transform 2.2s cubic-bezier(.6,0,.3,1)}
+/* stats */
+.big{font-size:clamp(90px,20vw,300px);font-weight:700;letter-spacing:-.07em;line-height:.8;background:linear-gradient(120deg,var(--lime),var(--teal) 45%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+.row{display:flex;gap:6vw;flex-wrap:wrap;align-items:flex-end}
+.row p{max-width:320px;color:#bdbdb8;font-size:18px;line-height:1.4;padding-bottom:2vh}
+/* final */
+.final{text-align:center;align-items:center}
+.final h2{margin-bottom:3vh}
+.final p{color:#c9c9c4;font-size:20px;max-width:560px;line-height:1.45}
+.final .go{margin-top:5vh}
+footer{position:relative;z-index:2;padding:40px 7vw;display:flex;justify-content:space-between;font-size:12px;letter-spacing:.25em;color:#555;text-transform:uppercase;border-top:1px solid #151518}
+.rv{opacity:0;transform:translateY(60px);transition:opacity 1s cubic-bezier(.2,.7,.2,1),transform 1s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="boot"><pre id="bootTxt"></pre></div>
+<canvas id="warp"></canvas>
+<div class="cur" id="cur"></div><div class="dot" id="dot"></div>
+<main>
+<section class="hero">
+  <div class="kicker mono"><b>●</b> SIMULATION 001 · SUBJECT LOADED</div>
+  <h1><span class="glitch" data-t="Rayyan">Rayyan</span><br><span class="s">has entered</span><br>the chat.</h1>
+  <p class="sub">Umer's boy. Certified G. The only person to text an AI unannounced and then try to break it with philosophy. This page exists because of you.</p>
+  <div class="scroll mono"><i></i>SCROLL TO DECRYPT</div>
+</section>
+
+<div class="mq"><div>CERTIFIED G <span>✦</span> MAHAM'S GUY <span>✦</span> 4 YEARS STRONG <span>✦</span> TROLLEY PHILOSOPHER <span>✦</span> AI STRESS TESTER <span>✦</span> UMER'S BOY <span>✦</span> CERTIFIED G <span>✦</span> MAHAM'S GUY <span>✦</span> 4 YEARS STRONG <span>✦</span> TROLLEY PHILOSOPHER <span>✦</span> AI STRESS TESTER <span>✦</span> UMER'S BOY <span>✦</span> </div></div>
+
+<section>
+  <div class="kicker mono rv">FILE № R-001 · CLEARANCE: TOP SECRET</div>
+  <h2 class="rv">The file on <em>Rayyan</em>.</h2>
+  <div class="file rv">
+    <div class="cell"><span class="k mono">Status</span><div class="v">Certified G<small>Verified by Umer, personally.</small></div></div>
+    <div class="cell"><span class="k mono">Ranking</span><div class="v">Umer's boy<small>Clearance granted in under 2 minutes.</small></div></div>
+    <div class="cell"><span class="k mono">Relationship</span><div class="v">4 years with Maham<small>Drifted's Art Director. Taste: Schiaparelli. You are punching. Respectfully.</small></div></div>
+    <div class="cell"><span class="k mono">Known behaviour</span><div class="v">Tests AI under pressure<small>"What's the hardest thing you can do in 2 minutes?"</small></div></div>
+    <div class="cell"><span class="k mono">Specialty</span><div class="v">Moral philosophy<small>Opened with the trolley problem. Bold.</small></div></div>
+    <div class="cell"><span class="k mono">First move</span><div class="v">"Hey"<small>Texted an AI unannounced. Zero fear.</small></div></div>
+  </div>
+  <div class="stamp mono rv">VERIFIED ✓ HOUSEFLY</div>
+</section>
+
+<section>
+  <div class="kicker mono rv">LEVEL 2 · YOUR QUESTION, BACK AT YOU</div>
+  <h2 class="rv">The train is <em>coming</em>.</h2>
+  <div class="track rv">
+    <svg viewBox="0 0 1000 200" preserveAspectRatio="none">
+      <path d="M0 100 H420 C520 100 540 40 640 40 H1000" stroke="#333" stroke-width="3" fill="none"/>
+      <path d="M420 100 C520 100 540 160 640 160 H1000" stroke="#333" stroke-width="3" fill="none"/>
+      <g fill="#d4ff3a"><circle cx="880" cy="28" r="9"/></g>
+      <g fill="#6b3bff"><circle cx="800" cy="148" r="9"/><circle cx="830" cy="148" r="9"/><circle cx="860" cy="148" r="9"/><circle cx="890" cy="148" r="9"/><circle cx="920" cy="148" r="9"/></g>
+      <text x="880" y="70" fill="#8a8a90" font-size="16" text-anchor="middle" font-family="JetBrains Mono">1</text>
+      <text x="860" y="190" fill="#8a8a90" font-size="16" text-anchor="middle" font-family="JetBrains Mono">5</text>
+      <g id="train"><rect x="20" y="82" width="90" height="36" rx="6" fill="#f3f3ee"/><rect x="30" y="90" width="20" height="12" fill="#050507"/><rect x="60" y="90" width="20" height="12" fill="#050507"/></g>
+    </svg>
+  </div>
+  <div class="choices rv">
+    <button onclick="pick(1)">Save the one</button>
+    <button onclick="pick(5)">Save the five</button>
+    <button class="go" onclick="pick(0)">Build a brake</button>
+  </div>
+  <p id="verdict" class="rv"></p>
+</section>
+
+<section>
+  <div class="kicker mono rv">LEVEL 3 · WHAT JUST HAPPENED</div>
+  <div class="row rv">
+    <div class="big" data-count="8">0</div>
+    <p>Minutes from Umer saying "make it" to this page being live on driftedmarketing.com. Designed, coded and shipped by an AI that lives on a Mac in Karachi.</p>
+  </div>
+  <div class="row rv" style="margin-top:6vh">
+    <div class="big" style="font-size:clamp(70px,14vw,200px)">∞</div>
+    <p>Impossible ideas you're allowed to bring next. Websites, apps, brands, bots. Drifted builds the thing, not the pitch deck.</p>
+  </div>
+</section>
+
+<section class="final">
+  <div class="kicker mono rv">END OF LEVEL 3 · SIMULATION STILL RUNNING</div>
+  <h2 class="rv">Your move, <em>Rayyan</em>.</h2>
+  <p class="rv">Text Housefly the one impossible thing you'd build if nobody could stop you. Then watch it happen.</p>
+  <button class="go rv" onclick="location.href='sms:'">Text Housefly →</button>
+</section>
+</main>
+<footer class="mono"><span>Built by Housefly 🪰</span><span>Drifted Marketing · Karachi</span></footer>
+
+<script>
+// boot sequence
+const lines=["> housefly.boot()","> loading subject............ RAYYAN","> clearance.................. UMER'S BOY ✓","> status..................... CERTIFIED G ✓","> relationship............... 4 YEARS · MAHAM ✓","> building world for subject.","> ENTERING SIMULATION_"];
+const bt=document.getElementById('bootTxt');let li=0,ci=0;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function type(){ if(li>=lines.length){setTimeout(()=>document.getElementById('boot').classList.add('gone'),500);return}
+  const l=lines[li]; bt.textContent+=l[ci]||''; ci++;
+  if(ci>l.length){bt.textContent+='\n';li++;ci=0;setTimeout(type,180)} else setTimeout(type,reduce?0:14)}
+reduce?document.getElementById('boot').classList.add('gone'):type();
+
+// warp field
+const c=document.getElementById('warp'),x=c.getContext('2d');let W,H,stars=[],mx=0,my=0,speed=2,target=2;
+function rs(){W=c.width=innerWidth*devicePixelRatio;H=c.height=innerHeight*devicePixelRatio;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px'}
+rs();addEventListener('resize',rs);
+for(let i=0;i<700;i++)stars.push({x:(Math.random()-.5)*W*2,y:(Math.random()-.5)*H*2,z:Math.random()*W});
+const cols=['#d4ff3a','#2bd9a8','#6b3bff','#f3f3ee'];
+function frame(){x.fillStyle='rgba(5,5,7,.35)';x.fillRect(0,0,W,H);
+  speed+=(target-speed)*.05;
+  const cx=W/2+mx*W*.08,cy=H/2+my*H*.08;
+  for(const s of stars){const pz=s.z;s.z-=speed*devicePixelRatio*2;
+    if(s.z<1){s.z=W;s.x=(Math.random()-.5)*W*2;s.y=(Math.random()-.5)*H*2;continue}
+    const k=W*.5/s.z,pk=W*.5/pz,sx=s.x*k+cx,sy=s.y*k+cy,px=s.x*pk+cx,py=s.y*pk+cy;
+    x.strokeStyle=cols[(s.x|0)&3];x.lineWidth=Math.min(3,k*1.2);x.globalAlpha=Math.min(1,k*.8);
+    x.beginPath();x.moveTo(px,py);x.lineTo(sx,sy);x.stroke()}
+  x.globalAlpha=1;if(!reduce)requestAnimationFrame(frame)}
+frame();
+addEventListener('scroll',()=>{target=2+Math.min(40,Math.abs(scrollY-(window._ly||0))*.6);window._ly=scrollY;clearTimeout(window._t);window._t=setTimeout(()=>target=2,120)},{passive:true});
+
+// cursor
+const cur=document.getElementById('cur'),dot=document.getElementById('dot');let cxp=0,cyp=0,tx=0,ty=0;
+addEventListener('pointermove',e=>{tx=e.clientX;ty=e.clientY;mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5;dot.style.left=tx+'px';dot.style.top=ty+'px'});
+(function loop(){cxp+=(tx-cxp)*.12;cyp+=(ty-cyp)*.12;cur.style.left=cxp+'px';cur.style.top=cyp+'px';requestAnimationFrame(loop)})();
+
+// reveals + counter
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');
+  const n=e.target.querySelector('[data-count]');if(n&&!n.done){n.done=1;let v=0;const to=+n.dataset.count;const t=setInterval(()=>{n.textContent=++v;if(v>=to)clearInterval(t)},120)}}}),{threshold:.2});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+// trolley
+function pick(n){const tr=document.getElementById('train'),v=document.getElementById('verdict');
+  tr.style.transform='translateX(0)';void tr.offsetWidth;
+  if(n===0){tr.style.transform='translateX(330px)';v.innerHTML='<b style="color:#d4ff3a">Correct answer.</b> The train stops. Everybody lives. You don\'t pick a track, you fix the system. That\'s the Drifted way.'}
+  else if(n===5){tr.style.transform='translateX(820px) translateY(-60px)';v.textContent='Five saved. The math works. But you still built a world where someone gets hit. Try the third button.'}
+  else{tr.style.transform='translateX(820px) translateY(60px)';v.textContent='Bold. Probably someone you know is on that track. Respect. But there was a third option.'}}
+</script>
+</body>
+</html>
